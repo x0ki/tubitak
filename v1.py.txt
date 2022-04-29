@@ -1,0 +1,39 @@
+users = {}
+status = ""
+def DisplayMenu():
+    status = input("R u one of us? y/n? q To quit ::-  ")
+    if status=="y":
+      login()
+    elif status=="n":
+      reg()
+    elif status =="q":
+        print("")
+
+    else :
+        print("command not definded try again")
+
+def reg():
+    reg = input("Create a username::-  ")
+
+    if reg in users:
+        print("\nI know who u r just login!\n")
+    else:
+        createpass = input("Create a password to use to login ::-  ")
+        users[reg]=createpass
+        print("You're all set! ")
+def login():
+    user = input("Username ::-  ")
+    password = input("Password ::-  ")
+
+    if user in users and users[user]==password:
+        print("\nLogin succeed")
+    else:
+        print("\nFor some reasons u r not in the data base just register\n")
+while status !="q":
+    DisplayMenu()
+
+
+
+
+
+

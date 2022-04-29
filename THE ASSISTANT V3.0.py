@@ -5,7 +5,7 @@ import speech_recognition as sr
 import os
 import re
 import webbrowser
-import smtplib
+import smtplib , ssl
 import requests
 #from weather import Weather
 import operator
@@ -15,9 +15,9 @@ import pyperclip as clip
 import pyshorteners as shortener
 import pyttsx3
 
-if __name__ == '__main__':
-    board = pyfirmata.Arduino('COM4')
-    print("Communication Successfully started")
+#if __name__ == '__main__':
+ #   board = pyfirmata.Arduino('COM4')
+  #  print("Communication Successfully started")
 
 
 class color:
@@ -192,32 +192,26 @@ def assistant(command):
                          'The lowest temperature will be %.1f degrees.' % (forecasts[i].date(), forecasts[i].text(), (int(forecasts[i].high())-32)/1.8, (int(forecasts[i].low())-32)/1.8))
 
 
-    elif 'email' in command:
+    elif 'email' or 'mail' in command:
         talkToMe('Who is the recipient?')
         recipient = myCommand()
 
-        if 'John' in recipient:
-            talkToMe('What should I say?')
-            content = myCommand()
+        if 'Alex' or 'alex' in recipient:
+            port = 587  # For starttls
+            smtp_server = "smtp.gmail.com"
+            sender_email = "ezelarap24@gmail.com"
+            receiver_email = "ezel@bayraktar.ltd"
+            password = "Bnan@2003"
+            talkToMe('what shall i tell')
+            message = myCommand()
 
-            #init gmail SMTP
-            mail = smtplib.SMTP('smtp.gmail.com', 587)
-
-            #identify to server
-            mail.ehlo()
-
-            #encrypt session
-            mail.starttls()
-
-            #login
-            mail.login('username', 'password')
-
-            #send message
-            mail.sendmail('John Fisher', 'JARVIS2.0@protonmail.com', content)
-
-            #end mail connection
-            mail.close()
-
+            context = ssl.create_default_context()
+            with smtplib.SMTP(smtp_server, port) as server:
+                server.ehlo()  # Can be omitted
+                server.starttls(context=context)
+                server.ehlo()  # Can be omitted
+                server.login(sender_email, password)
+                server.sendmail(sender_email, receiver_email, message)
             talkToMe('Email sent.')
 
         else:
