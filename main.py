@@ -13,15 +13,26 @@ import time
 import pyperclip as clip
 import pyshorteners as shortener
 import pyttsx3
+import random
 
+VARbed = 0
+VARdine = 0
+VARlive = 0
+
+aONLIST = ['i cant turn the same thing on while it is already on' , 'it is already on sir','i guess u are blind, sorry bad news']
+aOFFLIST = ['can you turn the same thing off twice? no you cant , so cant i', 'already off']
 
 
 
 if __name__ == '__main__':
-    board = pyfirmata.Arduino('COM6')
+    board = pyfirmata.Arduino('COM5')
     print("Communication Successfully started")
 
 
+offList = ['in case you want it off , just let me know' , 'dont forget to inform once you want it off' , 'i would love to help you again if you want to turn it off again' , 
+'done' , 'blink! , it is off']
+
+onList = ['you got my light , didnt you?' , 'do i have to do all the work my self?' , 'you must thank allah that the developer made me']
 
 class color:
     pURPLE = '\033[95m'
@@ -75,6 +86,7 @@ def talkToMe(audio):
     "speaks audio passed as argument"
 
     sayer = pyttsx3.init()
+    sayer.setProperty('rate',140)
     sayer.say(audio)
     sayer.runAndWait()
 
@@ -83,7 +95,7 @@ def talkToMe(audio):
     #  text_to_speech.save('audio.mp3')
     #  os.system('mpg123 audio.mp3')
 
-talkToMe("say help to liste the guide")
+talkToMe("say help to listen the guide")
 def myCommand():
     "listens for commands"
 
@@ -109,6 +121,11 @@ def myCommand():
 
 def assistant(command):
     "if statements for executing commands"
+    #more developed lightning variables
+    global VARbed 
+    global VARdine 
+    global VARlive 
+
 
     if 'open reddit' in command:
         reg_ex = re.search('open reddit (.*)', command)
@@ -145,23 +162,88 @@ def assistant(command):
         print(color.rED + """DONE :)""" + color.eND)
 ##-------------------------------------------------------------------#
     elif 'living' in command:
+        
         if 'on' in command:
-            board.digital[3].write(1)
+            if VARlive == 0:
+                board.digital[3].write(1)
+                talkToMe( random.choice(onList) )
+                VARlive = 1
+            else:
+                talkToMe(random.choice(aONLIST))
+            
         elif 'off' in command:
-            board.digital[3].write(0)
+            if VARlive == 1:
+                board.digital[3].write(0)
+                talkToMe( random.choice(offList) )
+                VARlive = 0
+            else:
+                talkToMe(random.choice(aOFFLIST))  
+
     
     elif 'bedroom' in command:
         if 'on' in command:
-            board.digital[2].write(1)
+            if VARbed == 0:
+                board.digital[2].write(1)
+                talkToMe( random.choice(onList) )
+                VARbed = 1
+            else:
+                 talkToMe(random.choice(aONLIST))
+
         elif 'off' in command:
-            board.digital[2].write(0)
+            if VARbed == 1:
+                board.digital[2].write(0)
+                talkToMe( random.choice(offList) )
+                VARbed = 0
+            else:
+                talkToMe(random.choice(aOFFLIST))
+
     
+
+    elif 'email' in command:
+        talkToMe('Who is the recipient?')
+        recipient = myCommand()
+
+        if 'Alex' or 'alex' in recipient:
+            port = 587  # For starttls
+            smtp_server = "smtp.gmail.com"
+            sender_email = "ezelarap24@gmail.com"
+            receiver_email = "ezel@bayraktar.ltd"
+            password = "Bnan@2003"
+            talkToMe('what shall i tell')
+            message = myCommand()
+
+            context = ssl.create_default_context()
+            with smtplib.SMTP(smtp_server, port) as server:
+                server.ehlo()  # Can be omitted
+                server.starttls(context=context)
+                server.ehlo()  # Can be omitted
+                server.login(sender_email, password)
+                server.sendmail(sender_email, receiver_email, message)
+            talkToMe('Email sent.')
+
+        else:
+            talkToMe('I don\'t know what you mean!')
+
+
 
     elif 'dining' in command:
         if 'on' in command:
-            board.digital[4].write(1)
+            if  VARdine==0:
+                board.digital[4].write(1)
+                VARdine = 1
+                talkToMe( random.choice(onList) )
+                
+            else:
+                talkToMe(random.choice(aONLIST))
+
         elif 'off' in command:
-            board.digital[4].write(0)
+            if VARdine == 1:
+                board.digital[4].write(0)
+                talkToMe( random.choice(offList) )
+                VARdine = 0
+            else:
+                talkToMe(random.choice(aOFFLIST))
+
 ##----------------------------------------------------##
     elif 'open website' in command:
         reg_ex = re.search('open website (.+)', command)
@@ -212,33 +294,12 @@ def assistant(command):
         else:
             print("Error in the HTTP request")
             talkToMe('i got an issue')
+    else:
+        talkToMe(random.choice('what','sorry i didnt get it , may you repeat'))
 
 
 
-    elif 'email' or 'mail' in command:
-        talkToMe('Who is the recipient?')
-        recipient = myCommand()
-
-        if 'Alex' or 'alex' in recipient:
-            port = 587  # For starttls
-            smtp_server = "smtp.gmail.com"
-            sender_email = "ezelarap24@gmail.com"
-            receiver_email = "ezel@bayraktar.ltd"
-            password = "Bnan@2003"
-            talkToMe('what shall i tell')
-            message = myCommand()
-
-            context = ssl.create_default_context()
-            with smtplib.SMTP(smtp_server, port) as server:
-                server.ehlo()  # Can be omitted
-                server.starttls(context=context)
-                server.ehlo()  # Can be omitted
-                server.login(sender_email, password)
-                server.sendmail(sender_email, receiver_email, message)
-            talkToMe('Email sent.')
-
-        else:
-            talkToMe('I don\'t know what you mean!')
+    
 
 
 talkToMe('I am ready for your command')
